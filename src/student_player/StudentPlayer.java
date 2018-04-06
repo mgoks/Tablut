@@ -24,6 +24,6 @@ public class StudentPlayer extends TablutPlayer
      */
     public Move chooseMove(TablutBoardState boardState) 
     {
-        return MyTools.minimaxDecision(boardState);
+        return null;
     }
 }
