@@ -24,16 +24,6 @@ public class StudentPlayer extends TablutPlayer
      */
     public Move chooseMove(TablutBoardState boardState) 
     {
-    	Move move;
-    	
-    	move = MyTools.minimaxDecision(boardState);
-    	
-        // You probably will make separate functions in MyTools.
-        // For example, maybe you'll need to load some pre-processed best opening
-        // strategies...
-//        MyTools.getSomething();
-
-        // Return your move to be processed by the server.
-        return move;
+        return MyTools.minimaxDecision(boardState);
     }
 }
