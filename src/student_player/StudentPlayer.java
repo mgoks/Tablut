@@ -12,7 +12,9 @@ import tablut.TablutPlayer;
 /** A player file submitted by a student. */
 public class StudentPlayer extends TablutPlayer 
 {
-	private static final int SEARCH_DEPTH = 3;
+	private static final int SEARCH_DEPTH = 2;
+	private static final double W1		  = 1.0;
+	private static final Random rand = new Random(1919);
 	
     /**
      * You must modify this constructor to return your student number. This is
@@ -63,7 +65,7 @@ public class StudentPlayer extends TablutPlayer
         		highestValue = value;
         	}
     	}
-//    	System.out.println(highestValue);
+    	System.out.println(highestValue);
     	return bestMove;
     }
     
@@ -106,16 +108,17 @@ public class StudentPlayer extends TablutPlayer
     	 * 
     	 * f1 = (# my pieces) - (# opponent pieces)
     	 */
-    	double w1, f1;
+    	double f1;
     	int opponent;
     	
-    	w1 = 1.0;
-    	opponent = 1 - node.getOpponent(); // WTF?!!!!!!! WHY DOES THIS HAVE LIKE THIS????????
-    	if (opponent == TablutBoardState.SWEDE)
-    		f1 = node.getNumberPlayerPieces(TablutBoardState.MUSCOVITE) - node.getNumberPlayerPieces(opponent);
-    	else
-    		f1 = node.getNumberPlayerPieces(TablutBoardState.SWEDE) - node.getNumberPlayerPieces(opponent);
-    	return w1*f1;
+//    	if (node.getTurnNumber() > 44)
+//    		System.out.println("winner = " + node.getWinner() + ", player id: " + player_id);
+    	if(node.getWinner() == player_id)
+    		return Double.POSITIVE_INFINITY;
+    	
+    	opponent = 1 - player_id;
+    	f1 = node.getNumberPlayerPieces(player_id) - node.getNumberPlayerPieces(opponent);
+    	return W1*f1;
     }
     
     private boolean isTerminal(TablutBoardState s) 
