@@ -11,12 +11,15 @@ import tablut.TablutBoardState;
 import tablut.TablutMove;
 import tablut.TablutPlayer;
 
+// TODO add heuristic f3: proximity to king
+// 		diagonal neighbours (for M)
+
 /** A player file submitted by a student. */
 public class StudentPlayer extends TablutPlayer 
 {
 	private static final int MAX_SEARCH_DEPTH = 2;
 	private static final double W1		  = 1.0;
-	private static final double W2		  = 1.5;
+	private static final double W2		  = 1.75;
 	private static final Random rand = new Random(1919);
 	
     /**
