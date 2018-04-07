@@ -1,8 +1,10 @@
 package student_player;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Random;
+import java.util.Set;
 
 import boardgame.Move;
 import coordinates.Coord;
@@ -11,16 +13,15 @@ import tablut.TablutBoardState;
 import tablut.TablutMove;
 import tablut.TablutPlayer;
 
-// TODO add heuristic f3: proximity to king
-// 		diagonal neighbours (for M)
-
 /** A player file submitted by a student. */
 public class StudentPlayer extends TablutPlayer 
 {
-	private static final int MAX_SEARCH_DEPTH = 2;
-	private static final double W1		  = 1.0;
-	private static final double W2		  = 1.75;
-	private static final Random rand = new Random(1919);
+	private static final double W1 = 1.0;
+	private static final double W2 = 1.75;
+	
+	private static final int MAX_SEARCH_DEPTH 				= 2;
+	private static final Random rand						= new Random();
+//	private static 		 int n_initialMuscoviteNeighbours	= 8;
 	
     /**
      * You must modify this constructor to return your student number. This is
@@ -43,6 +44,7 @@ public class StudentPlayer extends TablutPlayer
     	double highestValue, value;
     	int depth;
     	TablutMove bestMove;
+    	int counter;
     	
     	bestMove = null;
     	highestValue = Double.NEGATIVE_INFINITY;
@@ -55,12 +57,13 @@ public class StudentPlayer extends TablutPlayer
     	 * 
     	 * TODO optimize
     	 */
+    	counter = 0;
     	for (TablutMove move : possibleMoves){
     		value = alphaBeta(getChild(boardState, move), 
-					  depth, 
-					  Double.NEGATIVE_INFINITY, 
-					  Double.POSITIVE_INFINITY, 
-					  false);
+					  		  depth, 
+					  		  Double.NEGATIVE_INFINITY, 
+					  		  Double.POSITIVE_INFINITY, 
+					  		  false);
     		
     		// If value of the move = max value, return that move
     		if (value == Double.POSITIVE_INFINITY)
@@ -71,7 +74,7 @@ public class StudentPlayer extends TablutPlayer
         		highestValue = value;
         	}
     	}
-//    	System.out.println(highestValue);
+//    	System.out.println(boardState.getTurnNumber());
     	return bestMove;
     }
     
@@ -109,14 +112,20 @@ public class StudentPlayer extends TablutPlayer
     
     private double heuristicValue(TablutBoardState node)
     {
-    	// h(node) = w1*f1
+    	// h(node) = w1*f1 + w2*f2
+    	
+    	/*
+    	 * TODO
+    	 * 	- enforce diagonal neighbors for M
+    	 * 	- add another heuristic function: proximity to King (?)
+    	 */
 
-    	double f1, f2, kingsDistanceToClosestCorner;
-    	int opponent;
+    	double f1, f2, f3, kingsDistanceToClosestCorner;
+    	int opponent, n_muscovitesNeighbours, totalDistanceToKing;
     	Coord kingPos;
+    	Set<Coord> myPieceCoords;
     	
 //    	if (node.getTurnNumber() > 44)
-//    		System.out.println("winner = " + node.getWinner() + ", player id: " + player_id);
     	opponent = 1 - player_id;
     	if(node.getWinner() == player_id)
     		return Double.POSITIVE_INFINITY;
@@ -130,7 +139,20 @@ public class StudentPlayer extends TablutPlayer
     	kingPos = node.getKingPosition();
     	kingsDistanceToClosestCorner = Coordinates.distanceToClosestCorner(kingPos);
     	f2 = player_id == TablutBoardState.MUSCOVITE ? kingsDistanceToClosestCorner : -kingsDistanceToClosestCorner;
-//    	System.out.println("f2: " + f2);
+    	
+    	/*
+    	 * TODO
+    	 * f3: Muscovites' Manhattan distance to the king
+    	 */
+    	if (player_id == TablutBoardState.MUSCOVITE){
+    		totalDistanceToKing = 0;
+    		myPieceCoords = node.getPlayerPieceCoordinates();
+    		for (Coord myPieceCoord : myPieceCoords){
+    			totalDistanceToKing += myPieceCoord.distance(kingPos);
+    		}
+    		System.out.println("total distance to King: " + totalDistanceToKing);
+    		f3 = -totalDistanceToKing;
+    	}
     	
     	return W1*f1 + W2*f2;
     }
@@ -158,4 +180,22 @@ public class StudentPlayer extends TablutPlayer
     	child.processMove(move);
     	return child;
     }
+    
+    /**
+     * Considering all possible moves all the time is too expensive.
+     * Why don't we add some randomness to the game and consider a random subset of 
+     * all possible moves?
+     * 
+     * @param s Board state to get moves for
+     * @param n number of legal moves we want
+     * @return
+     */
+//    private List<TablutMove> getSomeLegalMoves(TablutBoardState s, int n)
+//    {
+//    	List<TablutMove> allPossibleMoves, somePossibleMoves;
+//    	int i;
+//    	
+//    	allPossibleMoves = s.getAllLegalMoves();
+//    	for (i = 0; i < allPossibleMoves.size()/n)
+//    }
 }
