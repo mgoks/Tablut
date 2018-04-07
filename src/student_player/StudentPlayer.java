@@ -5,6 +5,8 @@ import java.util.List;
 import java.util.Random;
 
 import boardgame.Move;
+import coordinates.Coord;
+import coordinates.Coordinates;
 import tablut.TablutBoardState;
 import tablut.TablutMove;
 import tablut.TablutPlayer;
@@ -12,8 +14,9 @@ import tablut.TablutPlayer;
 /** A player file submitted by a student. */
 public class StudentPlayer extends TablutPlayer 
 {
-	private static final int SEARCH_DEPTH = 2;
+	private static final int MAX_SEARCH_DEPTH = 2;
 	private static final double W1		  = 1.0;
+	private static final double W2		  = 1.5;
 	private static final Random rand = new Random(1919);
 	
     /**
@@ -40,7 +43,7 @@ public class StudentPlayer extends TablutPlayer
     	
     	bestMove = null;
     	highestValue = Double.NEGATIVE_INFINITY;
-    	depth = SEARCH_DEPTH;
+    	depth = MAX_SEARCH_DEPTH;
     	possibleMoves = boardState.getAllLegalMoves();
     	/*
     	 * For all possible moves, calculate their value.
@@ -65,7 +68,7 @@ public class StudentPlayer extends TablutPlayer
         		highestValue = value;
         	}
     	}
-    	System.out.println(highestValue);
+//    	System.out.println(highestValue);
     	return bestMove;
     }
     
@@ -103,22 +106,30 @@ public class StudentPlayer extends TablutPlayer
     
     private double heuristicValue(TablutBoardState node)
     {
-    	/*
-    	 * h(node) = w1*f1
-    	 * 
-    	 * f1 = (# my pieces) - (# opponent pieces)
-    	 */
-    	double f1;
+    	// h(node) = w1*f1
+
+    	double f1, f2, kingsDistanceToClosestCorner;
     	int opponent;
+    	Coord kingPos;
     	
 //    	if (node.getTurnNumber() > 44)
 //    		System.out.println("winner = " + node.getWinner() + ", player id: " + player_id);
+    	opponent = 1 - player_id;
     	if(node.getWinner() == player_id)
     		return Double.POSITIVE_INFINITY;
-    	
-    	opponent = 1 - player_id;
+    	else if (node.getWinner() == opponent)
+    		return Double.NEGATIVE_INFINITY;
+
+    	// f1 = (# my pieces) - (# opponent pieces)
     	f1 = node.getNumberPlayerPieces(player_id) - node.getNumberPlayerPieces(opponent);
-    	return W1*f1;
+    	
+    	// f2: King's Manhattan-distance to the closest corner;
+    	kingPos = node.getKingPosition();
+    	kingsDistanceToClosestCorner = Coordinates.distanceToClosestCorner(kingPos);
+    	f2 = player_id == TablutBoardState.MUSCOVITE ? kingsDistanceToClosestCorner : -kingsDistanceToClosestCorner;
+//    	System.out.println("f2: " + f2);
+    	
+    	return W1*f1 + W2*f2;
     }
     
     private boolean isTerminal(TablutBoardState s) 
