@@ -1,7 +1,6 @@
 package student_player;
 
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Random;
 import java.util.Set;
@@ -17,7 +16,7 @@ import tablut.TablutPlayer;
 public class StudentPlayer extends TablutPlayer 
 {
 	private static final double W1 = 1.0;
-	private static final double W2 = 1.75;
+	private static final double W2 = 1.25;
 	
 	private static final int MAX_SEARCH_DEPTH 				= 2;
 	private static final Random rand						= new Random();
@@ -144,15 +143,15 @@ public class StudentPlayer extends TablutPlayer
     	 * TODO
     	 * f3: Muscovites' Manhattan distance to the king
     	 */
-    	if (player_id == TablutBoardState.MUSCOVITE){
-    		totalDistanceToKing = 0;
-    		myPieceCoords = node.getPlayerPieceCoordinates();
-    		for (Coord myPieceCoord : myPieceCoords){
-    			totalDistanceToKing += myPieceCoord.distance(kingPos);
-    		}
-    		System.out.println("total distance to King: " + totalDistanceToKing);
-    		f3 = -totalDistanceToKing;
-    	}
+//    	if (player_id == TablutBoardState.MUSCOVITE){
+//    		totalDistanceToKing = 0;
+//    		myPieceCoords = node.getPlayerPieceCoordinates();
+//    		for (Coord myPieceCoord : myPieceCoords){
+//    			totalDistanceToKing += myPieceCoord.distance(kingPos);
+//    		}
+//    		System.out.println("total distance to King: " + totalDistanceToKing);
+//    		f3 = -totalDistanceToKing;
+//    	}
     	
     	return W1*f1 + W2*f2;
     }
