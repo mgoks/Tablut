@@ -1,10 +1,7 @@
 package student_player;
 
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Random;
-import java.util.Set;
 
 import boardgame.Move;
 import coordinates.Coord;
@@ -16,16 +13,11 @@ import tablut.TablutPlayer;
 /** A player file submitted by a student. */
 public class StudentPlayer extends TablutPlayer 
 {
-	private static final int MUSC	= TablutBoardState.MUSCOVITE;
-	private static final int SWEDE	= TablutBoardState.SWEDE;
-	
 	private static final double W1 = 1.0;
 	private static final double W2 = 1.25;
-	
-	private static final int MAX_SEARCH_DEPTH 				= 2;
-	private static final Random rand						= new Random();
-//	private static 		 int n_initialMuscoviteNeighbours	= 8;
-	private static final int BLOCKADE						= 10;
+
+	private static final int MUSC				= TablutBoardState.MUSCOVITE;
+	private static final int MAX_SEARCH_DEPTH 	= 2;
     /**
      * You must modify this constructor to return your student number. This is
      * important, because this is what the code that runs the competition uses to
@@ -47,7 +39,6 @@ public class StudentPlayer extends TablutPlayer
     	double highestValue, value;
     	int depth;
     	TablutMove bestMove;
-    	int counter;
     	
     	bestMove = null;
     	highestValue = Double.NEGATIVE_INFINITY;
@@ -60,7 +51,6 @@ public class StudentPlayer extends TablutPlayer
     	 * 
     	 * TODO optimize
     	 */
-    	counter = 0;
     	for (TablutMove move : possibleMoves){
     		value = alphaBeta(getChild(boardState, move), 
 					  		  depth, 
@@ -77,10 +67,24 @@ public class StudentPlayer extends TablutPlayer
         		highestValue = value;
         	}
     	}
-//    	System.out.println(boardState.getTurnNumber());
     	return bestMove;
     }
     
+    /**
+     * Minimax-search algorithm with alpha-beta pruning
+     * @param node
+     * 		The node of state-tree to evaluate
+     * @param depth
+     * 		The number of level to recursively call the search algorithm
+     * @param a
+     * 		alpha value
+     * @param b
+     * 		beta value
+     * @param maximizingPlayer
+     * 		True if the method is called on a max-node, false otherwise
+     * @return
+     * 		the minimax value of node
+     */
     private double alphaBeta(TablutBoardState node, int depth, double a, double b, boolean maximizingPlayer)
     {
     	double v;
@@ -113,24 +117,20 @@ public class StudentPlayer extends TablutPlayer
     	}
     }
     
+    /**
+     * Evaluation function
+     * @param node 
+     * 		The game state to evaluate
+     * @return the heuristic value of the state
+     */
     private double heuristicValue(TablutBoardState node)
     {
-    	// h(node) = w1*f1 + w2*f2
-    	
-    	/*
-    	 * TODO
-    	 * 	- enforce diagonal neighbors for M
-    	 * 	- add another heuristic function: proximity to King (?)
-    	 */
-
-    	double f1 = 0d, f2 = 0d, f3 = 0d, kingsDistanceToClosestCorner;
-    	int opponent, n_muscovitesNeighbours, totalDistanceToKing;
+    	double f1 = 0.0, f2 = 0.0, f3 = 0.0, kingsDistanceToClosestCorner;
+    	int opponent;
     	Coord kingPos;
-    	Set<Coord> myPieceCoords;
     	List<Coord>blockadeCoords;
     	
-//    	if (node.getTurnNumber() > 44)
-    	opponent = 1 - player_id;
+    	opponent = 1 - player_id; // get opponent
     	if(node.getWinner() == player_id)
     		return Double.POSITIVE_INFINITY;
     	else if (node.getWinner() == opponent)
@@ -144,10 +144,9 @@ public class StudentPlayer extends TablutPlayer
     	kingsDistanceToClosestCorner = Coordinates.distanceToClosestCorner(kingPos);
     	f2 = player_id == MUSC ? kingsDistanceToClosestCorner : -kingsDistanceToClosestCorner;
     	
-    	// f3: For the first few turns enforce a Muscovite blockade
+    	// f3: For the first 25 turns enforce a Muscovite blockade
     	// Note: Coordinates start at zero.
     	if (player_id == MUSC && node.getTurnNumber() < 25){
-    		
     		// Make the list of coordinates to place the blockade around
     		blockadeCoords = new ArrayList<Coord>(4);
     		blockadeCoords.add(Coordinates.get(1,3));
@@ -166,19 +165,11 @@ public class StudentPlayer extends TablutPlayer
     		blockadeCoords.add(Coordinates.get(4,1));
     		blockadeCoords.add(Coordinates.get(3,1));
     		blockadeCoords.add(Coordinates.get(2,2));
-    		
-    		for (Coord blockadeCoord : blockadeCoords){
-    			if (node.getPieceAt(blockadeCoord) == TablutBoardState.Piece.BLACK){
-    				f3 += 2.5;
-//    				for (Coord neighbour : Coordinates.getNeighbors(blockadeCoord)){
-//    					if(node.getPieceAt(neighbour) == TablutBoardState.Piece.BLACK){
-//    						f3 += 10;
-//    					}
-//    				}
-    			}
-    		}
+
+    		for (Coord blockadeCoord : blockadeCoords)
+    			if (node.getPieceAt(blockadeCoord) == TablutBoardState.Piece.BLACK)
+    				f3 += 1.5;
     	}
-//    	System.out.println("turn #" + node.getTurnNumber() + ", f3: " + f3);
     	return W1*f1 + W2*f2 + f3;
     }
     
@@ -187,6 +178,12 @@ public class StudentPlayer extends TablutPlayer
 		return s.gameOver();
 	}
     
+    /**
+     * 
+     * @param parent
+     * @param moves
+     * @return all child nodes of parent state after applying the moves
+     */
     private List<TablutBoardState> getChildren(TablutBoardState parent, List<TablutMove> moves)
     {
     	List<TablutBoardState> children;
@@ -197,6 +194,12 @@ public class StudentPlayer extends TablutPlayer
     	return children;
     }
     
+    /**
+     * 
+     * @param parent
+     * @param move
+     * @return the child node of the parent state after applying the move
+     */
     private TablutBoardState getChild(TablutBoardState parent, TablutMove move)
     {
     	TablutBoardState child;
@@ -205,22 +208,4 @@ public class StudentPlayer extends TablutPlayer
     	child.processMove(move);
     	return child;
     }
-    
-    /**
-     * Considering all possible moves all the time is too expensive.
-     * Why don't we add some randomness to the game and consider a random subset of 
-     * all possible moves?
-     * 
-     * @param s Board state to get moves for
-     * @param n number of legal moves we want
-     * @return
-     */
-//    private List<TablutMove> getSomeLegalMoves(TablutBoardState s, int n)
-//    {
-//    	List<TablutMove> allPossibleMoves, somePossibleMoves;
-//    	int i;
-//    	
-//    	allPossibleMoves = s.getAllLegalMoves();
-//    	for (i = 0; i < allPossibleMoves.size()/n)
-//    }
 }
