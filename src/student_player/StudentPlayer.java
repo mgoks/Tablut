@@ -169,7 +169,7 @@ public class StudentPlayer extends TablutPlayer
     		
     		for (Coord blockadeCoord : blockadeCoords){
     			if (node.getPieceAt(blockadeCoord) == TablutBoardState.Piece.BLACK){
-    				f3 += 20;
+    				f3 += 2.5;
 //    				for (Coord neighbour : Coordinates.getNeighbors(blockadeCoord)){
 //    					if(node.getPieceAt(neighbour) == TablutBoardState.Piece.BLACK){
 //    						f3 += 10;
