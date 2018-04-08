@@ -1,6 +1,7 @@
 package student_player;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Random;
 import java.util.Set;
@@ -15,13 +16,16 @@ import tablut.TablutPlayer;
 /** A player file submitted by a student. */
 public class StudentPlayer extends TablutPlayer 
 {
+	private static final int MUSC	= TablutBoardState.MUSCOVITE;
+	private static final int SWEDE	= TablutBoardState.SWEDE;
+	
 	private static final double W1 = 1.0;
 	private static final double W2 = 1.25;
 	
 	private static final int MAX_SEARCH_DEPTH 				= 2;
 	private static final Random rand						= new Random();
 //	private static 		 int n_initialMuscoviteNeighbours	= 8;
-	
+	private static final int BLOCKADE						= 10;
     /**
      * You must modify this constructor to return your student number. This is
      * important, because this is what the code that runs the competition uses to
@@ -119,10 +123,11 @@ public class StudentPlayer extends TablutPlayer
     	 * 	- add another heuristic function: proximity to King (?)
     	 */
 
-    	double f1, f2, f3, kingsDistanceToClosestCorner;
+    	double f1 = 0d, f2 = 0d, f3 = 0d, kingsDistanceToClosestCorner;
     	int opponent, n_muscovitesNeighbours, totalDistanceToKing;
     	Coord kingPos;
     	Set<Coord> myPieceCoords;
+    	List<Coord>blockadeCoords;
     	
 //    	if (node.getTurnNumber() > 44)
     	opponent = 1 - player_id;
@@ -137,23 +142,44 @@ public class StudentPlayer extends TablutPlayer
     	// f2: King's Manhattan-distance to the closest corner;
     	kingPos = node.getKingPosition();
     	kingsDistanceToClosestCorner = Coordinates.distanceToClosestCorner(kingPos);
-    	f2 = player_id == TablutBoardState.MUSCOVITE ? kingsDistanceToClosestCorner : -kingsDistanceToClosestCorner;
+    	f2 = player_id == MUSC ? kingsDistanceToClosestCorner : -kingsDistanceToClosestCorner;
     	
-    	/*
-    	 * TODO
-    	 * f3: Muscovites' Manhattan distance to the king
-    	 */
-//    	if (player_id == TablutBoardState.MUSCOVITE){
-//    		totalDistanceToKing = 0;
-//    		myPieceCoords = node.getPlayerPieceCoordinates();
-//    		for (Coord myPieceCoord : myPieceCoords){
-//    			totalDistanceToKing += myPieceCoord.distance(kingPos);
-//    		}
-//    		System.out.println("total distance to King: " + totalDistanceToKing);
-//    		f3 = -totalDistanceToKing;
-//    	}
-    	
-    	return W1*f1 + W2*f2;
+    	// f3: For the first few turns enforce a Muscovite blockade
+    	// Note: Coordinates start at zero.
+    	if (player_id == MUSC && node.getTurnNumber() < 25){
+    		
+    		// Make the list of coordinates to place the blockade around
+    		blockadeCoords = new ArrayList<Coord>(4);
+    		blockadeCoords.add(Coordinates.get(1,3));
+    		blockadeCoords.add(Coordinates.get(1,4));
+    		blockadeCoords.add(Coordinates.get(1,5));
+    		blockadeCoords.add(Coordinates.get(2,6));
+    		blockadeCoords.add(Coordinates.get(3,7));
+    		blockadeCoords.add(Coordinates.get(4,7));
+    		blockadeCoords.add(Coordinates.get(5,7));
+    		blockadeCoords.add(Coordinates.get(6,6));
+    		blockadeCoords.add(Coordinates.get(7,5));
+    		blockadeCoords.add(Coordinates.get(7,4));
+    		blockadeCoords.add(Coordinates.get(7,3));
+    		blockadeCoords.add(Coordinates.get(6,2));
+    		blockadeCoords.add(Coordinates.get(5,1));
+    		blockadeCoords.add(Coordinates.get(4,1));
+    		blockadeCoords.add(Coordinates.get(3,1));
+    		blockadeCoords.add(Coordinates.get(2,2));
+    		
+    		for (Coord blockadeCoord : blockadeCoords){
+    			if (node.getPieceAt(blockadeCoord) == TablutBoardState.Piece.BLACK){
+    				f3 += 20;
+//    				for (Coord neighbour : Coordinates.getNeighbors(blockadeCoord)){
+//    					if(node.getPieceAt(neighbour) == TablutBoardState.Piece.BLACK){
+//    						f3 += 10;
+//    					}
+//    				}
+    			}
+    		}
+    	}
+//    	System.out.println("turn #" + node.getTurnNumber() + ", f3: " + f3);
+    	return W1*f1 + W2*f2 + f3;
     }
     
     private boolean isTerminal(TablutBoardState s) 
